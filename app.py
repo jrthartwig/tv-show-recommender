@@ -104,7 +104,20 @@ def recommend():
     for idx in top_indices:
         show = tv_shows.iloc[idx]['Title']
         if show not in closest_matches:
-            recommended_shows.append(show)
+            available_on = []
+            if tv_shows.iloc[idx]['Netflix'] == 1:
+                available_on.append('Netflix')
+            if tv_shows.iloc[idx]['Hulu'] == 1:
+                available_on.append('Hulu')
+            if tv_shows.iloc[idx]['Prime Video'] == 1:
+                available_on.append('Prime Video')
+            if tv_shows.iloc[idx]['Disney+'] == 1:
+                available_on.append('Disney+')
+
+            recommended_shows.append({
+                'title': show,
+                'available_on': available_on
+            })
 
     return jsonify({'recommended_shows': recommended_shows[:5]})
 
