@@ -6,6 +6,17 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
 from flask_cors import CORS
 
+from fuzzywuzzy import process
+
+
+def find_closest_match(title, titles, score_cutoff=90):
+    match, score = process.extractOne(title, titles, score_cutoff=score_cutoff)
+    if score >= score_cutoff:
+        return match
+    else:
+        return None
+
+
 tv_shows = pd.read_csv('tv_shows_with_genres.csv')
 
 # Clean the data
@@ -77,10 +88,14 @@ def recommend():
     user_shows = data['shows']
 
     indices = []
+    closest_matches = []
     for show in user_shows:
-        idx = tv_shows.index[tv_shows['Title'] == show].tolist()
-        if len(idx) > 0:
-            indices.append(idx[0])
+        closest_match = find_closest_match(show, tv_shows['Title'].tolist())
+        if closest_match:
+            closest_matches.append(closest_match)
+            idx = tv_shows.index[tv_shows['Title'] == closest_match].tolist()
+            if len(idx) > 0:
+                indices.append(idx[0])
 
     similarity_scores = cosine_sim[indices].mean(axis=0)
     # Add small random noise
@@ -91,7 +106,7 @@ def recommend():
     recommended_shows = []
     for idx in top_indices:
         show = tv_shows.iloc[idx]['Title']
-        if show not in user_shows:
+        if show not in closest_matches:
             recommended_shows.append(show)
 
     return jsonify({'recommended_shows': recommended_shows[:5]})
