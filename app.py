@@ -27,9 +27,6 @@ tv_shows = tv_shows.drop(
 tv_shows = tv_shows.fillna('')
 
 
-# api_key = "c17071557a8939568a96d1b122f50dc7"  # Replace with your TMDb API key
-
-
 def get_genres(title, api_key, counter, total):
     print(f"Fetching genre information for show {counter} of {total}: {title}")
 
