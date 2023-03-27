@@ -1,7 +1,7 @@
 import pandas as pd
 from flask import Flask, jsonify, request
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from flask_cors import CORS
 
 tv_shows = pd.read_csv('tv_shows.csv')
@@ -10,15 +10,23 @@ tv_shows = pd.read_csv('tv_shows.csv')
 tv_shows = tv_shows.drop(['ID', 'Age', 'IMDb'], axis=1)
 tv_shows = tv_shows.fillna('')
 
+# Preprocess the data for better analysis
+
+
+def preprocess(x):
+    return x.lower().replace(' ', '')
+
+
 # Create the feature matrix
-features = ['Title', 'Year', 'Netflix', 'Hulu',
+features = ['Year', 'Netflix', 'Hulu',
             'Prime Video', 'Disney+', 'Rotten Tomatoes']
 tv_shows['features'] = tv_shows[features].apply(
-    lambda x: ' '.join(x.astype(str)), axis=1)
+    lambda x: ' '.join(x.astype(str).apply(preprocess)), axis=1)
 
 # Create the count matrix
-count = CountVectorizer().fit_transform(tv_shows['features'])
-cosine_sim = cosine_similarity(count)
+vectorizer = TfidfVectorizer()
+tfidf_matrix = vectorizer.fit_transform(tv_shows['features'])
+cosine_sim = cosine_similarity(tfidf_matrix)
 
 app = Flask(__name__)
 CORS(app)
